@@ -1,39 +1,64 @@
 <div align="center">
+  <img src="icon.png" width="100" height="100" alt="YoPedia Logo" style="border-radius: 16px; margin-bottom: 16px;" />
+  
+  # YoPedia — Self-Hosted Payment Link Gateway
+  
+  A modern, lightweight, and secure self-hosted payment gateway for developers and online merchants.
+  
+  <p>
+    <a href="#key-features">Key Features</a> • 
+    <a href="#tech-stack">Tech Stack</a> • 
+    <a href="#installation">Installation</a> • 
+    <a href="#api-documentation">API Documentation</a> • 
+    <a href="#webhook-integration">Webhooks</a>
+  </p>
 
-<img src="icon.png" width="80" height="80" alt="YoPedia Logo" style="border-radius: 12px; margin-bottom: 10px;" />
-
-# YoPedia — Self-Hosted Payment Link Gateway
-
-[![PHP Version](https://img.shields.io/badge/PHP-%3E%3D%208.0-777bb4?style=flat-square&logo=php&logoColor=white)](https://www.php.net/)
-[![Database](https://img.shields.io/badge/MySQL-Database-4479a1?style=flat-square&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![Gateway](https://img.shields.io/badge/Gateway-Duitku-059669?style=flat-square&logo=emerald&logoColor=white)](https://duitku.com/)
-[![Status](https://img.shields.io/badge/Status-Stable-blue?style=flat-square)](#)
-
-YoPedia is a modern, self-hosted payment link gateway built with PHP. It allows businesses and developers to manage multiple payment projects, issue dynamic checkout URLs, and accept payments through QRIS, Virtual Accounts, and E-Wallets via Duitku integration.
-
-[Key Features](#key-features) • [Installation](#installation) • [API Documentation](#api-documentation) • [Webhook Integration](#webhook-integration)
-
+  <hr />
 </div>
-
----
 
 ## Key Features
 
-* **Multi-Project Management (Merchant Slugs)**: Manage multiple websites or apps using unique API keys, custom transaction prefixes, dedicated logos, and callback URLs.
-* **Dual Environments**: Fully separated Sandbox and Production environments with distinct user balance storage (`sandbox_balance` vs `pending_balance`).
-* **Sandbox Payment Simulator**: Trigger successful payment flows directly from the checkout detail page for seamless sandbox webhook testing.
-* **Custom Back Button Behavior**: Configure projects to either close the window/tab or redirect users back to the merchant's checkout/callback page upon payment completion.
-* **Webhook Logger**: Transparent dashboard tracking all sent webhooks, HTTP response codes, payloads, and response bodies.
-* **Elegant Checkout Interface**: A responsive, clean, green-themed payment selection and invoice receipt page tailored for desktop and mobile viewports.
+<table width="100%">
+  <tr>
+    <td width="50%" valign="top">
+      <strong>Multi-Project Slugs</strong><br />
+      Manage payment flows for multiple websites or applications from a single dashboard using custom API keys, slugs, and transaction prefixes.
+    </td>
+    <td width="50%" valign="top">
+      <strong>Dual-Mode Sandbox & Live</strong><br />
+      Separate your testing and production data completely. Track virtual sandbox funds and real cleared funds in independent balances.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <strong>Sandbox Payment Simulator</strong><br />
+      Trigger successful payment callbacks with a single click in sandbox mode to easily verify merchant API integrations and webhooks.
+    </td>
+    <td width="50%" valign="top">
+      <strong>Custom Redirections</strong><br />
+      Configure the "Return to Merchant" action per project to either automatically close the tab or redirect back to your website.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <strong>Transparent Webhook Logs</strong><br />
+      Monitor the exact payload, HTTP response status, and response bodies for all outgoing callbacks to your merchant server.
+    </td>
+    <td width="50%" valign="top">
+      <strong>Responsive & Minimalist UI</strong><br />
+      An elegant, green-accented invoice receipt and payment selector design engineered to fit all desktop and mobile screens.
+    </td>
+  </tr>
+</table>
 
 ---
 
-## Tech Stack & Prerequisites
+## Tech Stack
 
-* **Backend**: PHP 8.0 or higher (Tested and fully compatible with PHP 8.1.10)
-* **Web Server**: Apache / Nginx
-* **Database**: MySQL 5.7+ / MariaDB 10.3+ (PDO driver enabled)
-* **PHP Extensions**: `pdo_mysql`, `curl`, `json`, `openssl`
+* **Language**: PHP 8.0+ (Fully compatible with PHP 8.1+)
+* **Database**: MySQL 5.7+ / MariaDB 10.3+ (PDO driver)
+* **Web Server**: Apache / Nginx (Supports custom URL rewriting)
+* **Extensions**: `pdo_mysql`, `curl`, `json`, `openssl`
 * **Styling**: Vanilla CSS / Tailwind CSS v3
 
 ---
@@ -44,31 +69,28 @@ YoPedia is a modern, self-hosted payment link gateway built with PHP. It allows 
    ```bash
    git clone https://github.com/yourusername/yopedia.git
    ```
-2. **Configure Environment Variables**:
-   Copy `.env.example` to `.env` and fill in your database and Duitku API credentials:
+2. **Setup Environment Variables**:
+   Copy `.env.example` to `.env` and fill in your database and API credentials:
    ```env
    DB_HOST=localhost
    DB_NAME=db_yopedia_cv
    DB_USER=root
    DB_PASS=yourpassword
-   
-   DUITKU_MERCHANT_CODE=your_merchant_code
-   DUITKU_API_KEY=your_api_key
    ```
 3. **Database Migration**:
    Import `schema.sql` into your database.
-4. **Configure Web Server**:
-   Point your domain or local vhost document root to the `public/` directory.
+4. **Point Domain Root**:
+   Configure your server virtual host to point to the `public/` directory.
 
 ---
 
 ## API Documentation
 
-All requests should be sent as JSON payloads with the header `Content-Type: application/json`.
+All request payloads should use the `application/json` format.
 
 ### 1. Create Invoice (Without Payment Method)
 
-Creates a new transaction invoice and returns a `payment_link`. The customer selects their payment method on the YoPedia checkout page.
+Creates a new invoice and returns a `payment_link`. The customer selects their payment method on the YoPedia payment page.
 
 * **Method**: `POST`
 * **Endpoint**: `/api/transactioncreate`
@@ -98,7 +120,7 @@ Creates a new transaction invoice and returns a `payment_link`. The customer sel
 
 ### 2. Create Transaction V2 (With Specific Payment Method)
 
-Directly initiates a transaction with a pre-selected payment method (e.g. `qris`, `bni_va`, `shopeepay`). 
+Creates a transaction with a pre-selected payment method (e.g., `qris`, `bni_va`, `shopeepay`).
 
 * **Method**: `POST`
 * **Endpoint**: `/api/transactioncreate/{method_code}`
@@ -126,7 +148,7 @@ For QRIS (`qris`), the response includes the raw QRIS payload (`qr_string`), an 
 ```
 
 #### Virtual Account Response Example
-For VA (e.g. `bri_va`), the response includes the Virtual Account number (`va_number`) and instructions link (`payment_link`). The Duitku `payment_url` is bypassed/empty for VAs as YoPedia handles VA displays internally.
+For Virtual Accounts (e.g. `bri_va`), the response includes the VA number (`va_number`) and instructions page (`payment_link`). The `payment_url` is empty since YoPedia renders instructions internally.
 ```json
 {
   "payment": {
@@ -148,7 +170,7 @@ For VA (e.g. `bri_va`), the response includes the Virtual Account number (`va_nu
 ```
 
 #### E-Wallet Response Example
-For E-Wallets (e.g. `shopeepay`), the response includes a Duitku `payment_url` to redirect the customer to the app or payment session.
+For E-Wallets (e.g. `shopeepay`), the response includes a `payment_url` to redirect the customer to open the payment app.
 ```json
 {
   "payment": {
@@ -158,9 +180,9 @@ For E-Wallets (e.g. `shopeepay`), the response includes a Duitku `payment_url` t
     "fee": 1500,
     "total_payment": 51500,
     "payment_method": "shopeepay",
-    "payment_number": "https://sandbox.com/topup/topupdirectv2.aspx?ref=SA26...",
+    "payment_number": "https://sandbox.yopedia.test/topup/direct?ref=SA26...",
     "va_number": "",
-    "payment_url": "https://sandbox.com/topup/topupdirectv2.aspx?ref=SA26...",
+    "payment_url": "https://sandbox.yopedia.test/topup/direct?ref=SA26...",
     "qr_string": "",
     "qris_image": "",
     "payment_link": "http://yopedia.test/payment/detail/INV-100020",
@@ -188,8 +210,6 @@ For E-Wallets (e.g. `shopeepay`), the response includes a Duitku `payment_url` t
   ```
 
 ### 4. Get Payment Methods & Fees
-
-Retrieves a list of all active payment methods and their dynamic calculated fees for a given transaction amount.
 
 * **Method**: `GET`
 * **Endpoint**: `/api/payment/methods?project={slug}&amount={amount}&api_key={api_key}`
@@ -262,7 +282,7 @@ Retrieves a list of all active payment methods and their dynamic calculated fees
 
 ## Webhook Integration
 
-When a transaction is successfully completed, YoPedia will send a secure HTTP `POST` webhook to your project's configured `callback_url` with the following JSON payload:
+When a transaction is successfully completed, YoPedia sends a secure HTTP `POST` webhook to your configured `callback_url`:
 
 ```json
 {
