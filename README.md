@@ -63,26 +63,7 @@
 
 ---
 
-## Installation
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/yourusername/yopedia.git
-   ```
-2. **Setup Environment Variables**:
-   Copy `.env.example` to `.env` and fill in your database and API credentials:
-   ```env
-   DB_HOST=localhost
-   DB_NAME=db_yopedia_cv
-   DB_USER=root
-   DB_PASS=yourpassword
-   ```
-3. **Database Migration**:
-   Import `schema.sql` into your database.
-4. **Point Domain Root**:
-   Configure your server virtual host to point to the `public/` directory.
-
----
 
 ## API Documentation
 
