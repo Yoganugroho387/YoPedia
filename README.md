@@ -1,179 +1,203 @@
-# <img src="http://yopedia.test/icon.png" width="40" height="40" alt="YoPedia Logo" align="center" style="border-radius: 4px;" /> YoPedia — Self-Hosted Payment Link Gateway
+<div align="center">
 
-[![PHP Version](https://img.shields.io/badge/PHP-%3E%3D%208.0-777bb4?style=flat&logo=php&logoColor=white)](https://www.php.net/)
-[![Database](https://img.shields.io/badge/MySQL-Database-4479a1?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![Payment Gateway](https://img.shields.io/badge/Gateway-Duitku-059669?style=flat&logo=emerald&logoColor=white)](https://duitku.com/)
-[![License](https://img.shields.io/badge/License-Proprietary-gray?style=flat)](#)
+<img src="icon.png" width="80" height="80" alt="YoPedia Logo" style="border-radius: 12px; margin-bottom: 10px;" />
 
-YoPedia adalah platform *self-hosted payment link* & *payment gateway* modern, dinamis, dan responsif yang dirancang untuk memudahkan integrasi pembayaran online (QRIS, E-Wallet, & Virtual Account) ke berbagai proyek aplikasi atau website Anda melalui satu dasbor pusat.
+# YoPedia — Self-Hosted Payment Link Gateway
 
----
+[![PHP Version](https://img.shields.io/badge/PHP-%3E%3D%208.0-777bb4?style=flat-square&logo=php&logoColor=white)](https://www.php.net/)
+[![Database](https://img.shields.io/badge/MySQL-Database-4479a1?style=flat-square&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Gateway](https://img.shields.io/badge/Gateway-Duitku-059669?style=flat-square&logo=emerald&logoColor=white)](https://duitku.com/)
+[![Status](https://img.shields.io/badge/Status-Stable-blue?style=flat-square)](#)
 
-## 🚀 Fitur Utama
+YoPedia is a modern, self-hosted payment link gateway built with PHP. It allows businesses and developers to manage multiple payment projects, issue dynamic checkout URLs, and accept payments through QRIS, Virtual Accounts, and E-Wallets via Duitku integration.
 
-- **Multi-Proyek (Merchant Slugs)**: Kelola banyak proyek/aplikasi dengan *API Key*, *prefix transaksi*, logo khusus, dan *callback URL* masing-masing.
-- **Pemisahan Lingkungan**: Mendukung mode **Sandbox (Uji Coba)** dan **Live (Production)** dengan pencatatan saldo terpisah (`sandbox_balance` vs `pending_balance`).
-- **Simulasi Pembayaran (Sandbox)**: Tombol simulasi instan langsung dari halaman pembayaran uji coba untuk memudahkan developer melakukan testing webhook.
-- **Konfigurasi Aksi Kembali**: Pengaturan fleksibel per proyek untuk menutup jendela (*close tab*) atau dialihkan kembali ke website merchant setelah pembayaran selesai.
-- **Log Webhook Transparan**: Riwayat detail pengiriman callback webhook ke server merchant lengkap dengan request payload, kode HTTP, dan response body.
-- **UI Pembayaran Clean & Hijau**: Tampilan halaman pembayaran bersih, ramah seluler, minimalis, dan elegan dengan warna hijau sebagai aksen utama.
+[Key Features](#key-features) • [Installation](#installation) • [API Documentation](#api-documentation) • [Webhook Integration](#webhook-integration)
+
+</div>
 
 ---
 
-## 🛠️ Tech Stack & Persyaratan
+## Key Features
 
-- **Bahasa Pemrograman**: PHP `>= 8.0` (Diuji dan berjalan dengan baik pada **PHP 8.1.10**)
-- **Web Server**: Apache / Nginx
-- **Database**: MySQL `>= 5.7` atau MariaDB `>= 10.3` (Menggunakan driver **PDO**)
-- **Ekstensi PHP Wajib**: `pdo_mysql`, `curl`, `json`, `openssl`
-- **Styling**: Vanilla CSS / Tailwind CSS v3 (Clean Flat & Responsive Design)
-- **Integrasi PG**: API Duitku (Virtual Account, QRIS, E-Wallet)
+* **Multi-Project Management (Merchant Slugs)**: Manage multiple websites or apps using unique API keys, custom transaction prefixes, dedicated logos, and callback URLs.
+* **Dual Environments**: Fully separated Sandbox and Production environments with distinct user balance storage (`sandbox_balance` vs `pending_balance`).
+* **Sandbox Payment Simulator**: Trigger successful payment flows directly from the checkout detail page for seamless sandbox webhook testing.
+* **Custom Back Button Behavior**: Configure projects to either close the window/tab or redirect users back to the merchant's checkout/callback page upon payment completion.
+* **Webhook Logger**: Transparent dashboard tracking all sent webhooks, HTTP response codes, payloads, and response bodies.
+* **Elegant Checkout Interface**: A responsive, clean, green-themed payment selection and invoice receipt page tailored for desktop and mobile viewports.
 
 ---
 
-## 📚 Panduan Dokumentasi API
+## Tech Stack & Prerequisites
 
-Seluruh request API wajib menyertakan tipe data `application/json` pada header request.
+* **Backend**: PHP 8.0 or higher (Tested and fully compatible with PHP 8.1.10)
+* **Web Server**: Apache / Nginx
+* **Database**: MySQL 5.7+ / MariaDB 10.3+ (PDO driver enabled)
+* **PHP Extensions**: `pdo_mysql`, `curl`, `json`, `openssl`
+* **Styling**: Vanilla CSS / Tailwind CSS v3
 
-### 1. Membuat Invoice / Payment Link (Tanpa Menentukan Metode)
-Membuat invoice pembayaran baru dan mendapatkan tautan pembayaran (`payment_link`) di mana pelanggan akan memilih sendiri metode pembayarannya di halaman selektor hijau YoPedia.
+---
+
+## Installation
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/yourusername/yopedia.git
+   ```
+2. **Configure Environment Variables**:
+   Copy `.env.example` to `.env` and fill in your database and Duitku API credentials:
+   ```env
+   DB_HOST=localhost
+   DB_NAME=db_yopedia_cv
+   DB_USER=root
+   DB_PASS=yourpassword
+   
+   DUITKU_MERCHANT_CODE=your_merchant_code
+   DUITKU_API_KEY=your_api_key
+   ```
+3. **Database Migration**:
+   Import `schema.sql` into your database.
+4. **Configure Web Server**:
+   Point your domain or local vhost document root to the `public/` directory.
+
+---
+
+## API Documentation
+
+All requests should be sent as JSON payloads with the header `Content-Type: application/json`.
+
+### 1. Create Invoice (Without Payment Method)
+
+Creates a new transaction invoice and returns a `payment_link`. The customer selects their payment method on the YoPedia checkout page.
 
 * **Method**: `POST`
 * **Endpoint**: `/api/transactioncreate`
 * **Request Body**:
   ```json
   {
-    "project": "slug-proyek-anda",
-    "order_id": "INV-123456",
+    "project": "project-slug",
+    "order_id": "INV-100020",
     "amount": 50000,
-    "api_key": "API_KEY_PROYEK_ANDA",
-    "redirect_url": "https://website-anda.com/finish" (Opsional)
+    "api_key": "YOUR_PROJECT_API_KEY",
+    "redirect_url": "https://yourwebsite.com/success"
   }
   ```
-* **Contoh Response**:
+* **Response**:
   ```json
   {
-    "invoice_id": "INV1fa7e023b",
+    "invoice_id": "INV09dcb0c9b",
     "amount": 50000,
     "fee": 0,
     "total": 50000,
     "qris_image": "",
-    "payment_link": "http://yopedia.test/payment/INV1fa7e023b",
+    "payment_link": "http://yopedia.test/payment/INV09dcb0c9b",
     "expired_at": "2026-07-16T22:30:00+07:00",
-    "order_id": "INV-123456"
+    "order_id": "INV-100020"
   }
   ```
 
-### 2. Membuat Transaksi V2 (Dengan Metode Pembayaran Spesifik)
-Membuat transaksi baru dengan langsung menentukan metode pembayarannya dari API (misal `qris`, `bni_va`, dll.).
-- **QRIS**: Menghasilkan string payload QRIS (`payment_number`) dan tautan ke halaman detail rincian pembayaran YoPedia (`payment_link`).
-- **Virtual Account**: Menghasilkan nomor VA (`payment_number`) dan tautan rincian pembayaran YoPedia (`payment_link`). *Catatan:* Tautan `paymentUrl` bawaan Duitku diabaikan (tidak digunakan) karena YoPedia memproses dan menampilkan VA & panduan bayarnya secara internal.
-- **E-Wallet**: Khusus untuk E-wallet, respons API tetap menyertakan tautan `payment_url` bawaan Duitku guna mengarahkan/membuka aplikasi E-wallet terkait.
+### 2. Create Transaction V2 (With Specific Payment Method)
+
+Directly initiates a transaction with a pre-selected payment method (e.g. `qris`, `bni_va`, `shopeepay`). 
 
 * **Method**: `POST`
 * **Endpoint**: `/api/transactioncreate/{method_code}`
-* **Request Body**:
-  ```json
-  {
-    "project": "slug-proyek-anda",
-    "order_id": "INV-123456",
+
+#### QRIS Response Example
+For QRIS (`qris`), the response includes the raw QRIS payload (`qr_string`), an image link (`qris_image`), and the checkout details page (`payment_link`).
+```json
+{
+  "payment": {
+    "project": "project-slug",
+    "order_id": "INV-100020",
     "amount": 50000,
-    "api_key": "API_KEY_PROYEK_ANDA",
-    "redirect_url": "https://website-anda.com/finish" (Opsional)
+    "fee": 1000,
+    "total_payment": 51000,
+    "payment_method": "qris",
+    "payment_number": "00020101021226610016ID.CO.SHOPEE...",
+    "va_number": "",
+    "payment_url": "",
+    "qr_string": "00020101021226610016ID.CO.SHOPEE...",
+    "qris_image": "http://yopedia.test/public/uploads/qris/INV-100020.png",
+    "payment_link": "http://yopedia.test/payment/detail/INV-100020",
+    "expired_at": "2026-07-16T22:30:00+07:00"
   }
-  ```
-* **Contoh Response (QRIS)**:
-  ```json
-  {
-    "payment": {
-      "project": "slug-proyek-anda",
-      "order_id": "INV-123456",
-      "amount": 50000,
-      "fee": 1000,
-      "total_payment": 51000,
-      "payment_method": "qris",
-      "payment_number": "00020101021226610016ID.CO.SHOPEE...",
-      "va_number": "",
-      "payment_url": "",
-      "qr_string": "00020101021226610016ID.CO.SHOPEE...",
-      "qris_image": "http://yopedia.test/public/uploads/qris/INV-123456.png",
-      "payment_link": "http://yopedia.test/payment/detail/INV-123456",
-      "expired_at": "2026-07-16T22:30:00+07:00"
-    }
+}
+```
+
+#### Virtual Account Response Example
+For VA (e.g. `bri_va`), the response includes the Virtual Account number (`va_number`) and instructions link (`payment_link`). The Duitku `payment_url` is bypassed/empty for VAs as YoPedia handles VA displays internally.
+```json
+{
+  "payment": {
+    "project": "project-slug",
+    "order_id": "INV-100020",
+    "amount": 50000,
+    "fee": 4000,
+    "total_payment": 54000,
+    "payment_method": "bri_va",
+    "payment_number": "1308200985000957",
+    "va_number": "1308200985000957",
+    "payment_url": "",
+    "qr_string": "",
+    "qris_image": "",
+    "payment_link": "http://yopedia.test/payment/detail/INV-100020",
+    "expired_at": "2026-07-16T22:30:00+07:00"
   }
-  ```
+}
+```
 
-* **Contoh Response (Virtual Account - VA)**:
-  ```json
-  {
-    "payment": {
-      "project": "slug-proyek-anda",
-      "order_id": "INV-123456",
-      "amount": 50000,
-      "fee": 4000,
-      "total_payment": 54000,
-      "payment_method": "bri_va",
-      "payment_number": "1308200985000957",
-      "va_number": "1308200985000957",
-      "payment_url": "",
-      "qr_string": "",
-      "qris_image": "",
-      "payment_link": "http://yopedia.test/payment/detail/INV-123456",
-      "expired_at": "2026-07-16T22:30:00+07:00"
-    }
+#### E-Wallet Response Example
+For E-Wallets (e.g. `shopeepay`), the response includes a Duitku `payment_url` to redirect the customer to the app or payment session.
+```json
+{
+  "payment": {
+    "project": "project-slug",
+    "order_id": "INV-100020",
+    "amount": 50000,
+    "fee": 1500,
+    "total_payment": 51500,
+    "payment_method": "shopeepay",
+    "payment_number": "https://sandbox.com/topup/topupdirectv2.aspx?ref=SA26...",
+    "va_number": "",
+    "payment_url": "https://sandbox.com/topup/topupdirectv2.aspx?ref=SA26...",
+    "qr_string": "",
+    "qris_image": "",
+    "payment_link": "http://yopedia.test/payment/detail/INV-100020",
+    "expired_at": "2026-07-16T22:30:00+07:00"
   }
-  ```
+}
+```
 
-* **Contoh Response (E-Wallet)**:
-  ```json
-  {
-    "payment": {
-      "project": "slug-proyek-anda",
-      "order_id": "INV-123456",
-      "amount": 50000,
-      "fee": 1500,
-      "total_payment": 51500,
-      "payment_method": "shopeepay",
-      "payment_number": "https://sandbox.com/topup/topupdirectv2.aspx?ref=SA26...",
-      "va_number": "",
-      "payment_url": "https://sandbox..com/topup/topupdirectv2.aspx?ref=SA26...",
-      "qr_string": "",
-      "qris_image": "",
-      "payment_link": "http://yopedia.test/payment/detail/INV-123456",
-      "expired_at": "2026-07-16T22:30:00+07:00"
-    }
-  }
-  ```
-
-
-### 3. Cek Detail Transaksi
-Mendapatkan informasi detail dan status terbaru dari transaksi tertentu.
+### 3. Check Transaction Status
 
 * **Method**: `GET`
 * **Endpoint**: `/api/transactiondetail?project={slug}&amount={amount}&order_id={order_id}&api_key={api_key}`
-* **Contoh Response**:
+* **Response**:
   ```json
   {
     "transaction": {
       "amount": 50000,
-      "order_id": "INV-123456",
-      "project": "slug-proyek-anda",
+      "order_id": "INV-100020",
+      "project": "project-slug",
       "status": "completed",
       "payment_method": "qris",
       "completed_at": "2026-07-16T21:40:02+07:00"
     }
   }
   ```
-### 4. Dapatkan Metode Pembayaran & Biaya Admin (Fee)
-Mendapatkan daftar metode pembayaran yang aktif beserta biaya admin (fee) dinamis yang disesuaikan dengan nominal transaksi.
+
+### 4. Get Payment Methods & Fees
+
+Retrieves a list of all active payment methods and their dynamic calculated fees for a given transaction amount.
 
 * **Method**: `GET`
 * **Endpoint**: `/api/payment/methods?project={slug}&amount={amount}&api_key={api_key}`
-* **Contoh Response**:
+* **Response**:
   ```json
   {
     "success": true,
-    "project": "slug-proyek-anda",
+    "project": "project-slug",
     "amount": 50000,
     "payment_methods": [
       {
@@ -194,21 +218,19 @@ Mendapatkan daftar metode pembayaran yang aktif beserta biaya admin (fee) dinami
   }
   ```
 
-
-### 5. Simulasi Pembayaran Sukses (Sandbox Only)
-Melakukan simulasi pembayaran sukses tanpa perlu melakukan transfer nyata. Hanya berlaku untuk transaksi berstatus `sandbox`.
+### 5. Simulate Payment (Sandbox Only)
 
 * **Method**: `POST`
 * **Endpoint**: `/api/paymentsimulation`
 * **Request Body**:
   ```json
   {
-    "project": "slug-proyek-anda",
-    "order_id": "INV-123456",
-    "api_key": "API_KEY_PROYEK_ANDA"
+    "project": "project-slug",
+    "order_id": "INV-100020",
+    "api_key": "YOUR_PROJECT_API_KEY"
   }
   ```
-* **Contoh Response**:
+* **Response**:
   ```json
   {
     "success": true,
@@ -216,20 +238,19 @@ Melakukan simulasi pembayaran sukses tanpa perlu melakukan transfer nyata. Hanya
   }
   ```
 
-### 6. Membatalkan Transaksi
-Membatalkan transaksi tertunda agar status berubah menjadi `expired` / `failed` secara instan.
+### 6. Cancel Transaction
 
 * **Method**: `POST`
 * **Endpoint**: `/api/transactioncancel`
 * **Request Body**:
   ```json
   {
-    "project": "slug-proyek-anda",
-    "order_id": "INV-123456",
-    "api_key": "API_KEY_PROYEK_ANDA"
+    "project": "project-slug",
+    "order_id": "INV-100020",
+    "api_key": "YOUR_PROJECT_API_KEY"
   }
   ```
-* **Contoh Response**:
+* **Response**:
   ```json
   {
     "success": true,
@@ -239,15 +260,15 @@ Membatalkan transaksi tertunda agar status berubah menjadi `expired` / `failed` 
 
 ---
 
-## 🔔 Webhook Callback (Merchant HTTP POST)
+## Webhook Integration
 
-Ketika pelanggan menyelesaikan pembayaran, sistem YoPedia akan mengirimkan data callback secara otomatis menggunakan HTTP **`POST`** ke `callback_url` proyek Anda dengan format body JSON berikut:
+When a transaction is successfully completed, YoPedia will send a secure HTTP `POST` webhook to your project's configured `callback_url` with the following JSON payload:
 
 ```json
 {
   "amount": 50000,
-  "order_id": "INV-123456",
-  "project": "slug-proyek-anda",
+  "order_id": "INV-100020",
+  "project": "project-slug",
   "status": "completed",
   "payment_method": "qris",
   "completed_at": "2026-07-16T21:40:02+07:00"
@@ -256,5 +277,5 @@ Ketika pelanggan menyelesaikan pembayaran, sistem YoPedia akan mengirimkan data 
 
 ---
 
-## 🔒 Lisensi & Hak Cipta
-Hak Cipta © 2026 **YoPedia**. Dikembangkan dengan dedikasi penuh untuk efisiensi transaksi Anda.
+## License
+Copyright © 2026 YoPedia. All rights reserved.
